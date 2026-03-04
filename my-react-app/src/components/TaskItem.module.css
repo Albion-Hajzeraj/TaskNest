@@ -21,6 +21,8 @@
   cursor: pointer;
   text-align: left;
   line-height: 1.4;
+  display: grid;
+  gap: 0.35em;
 }
 
 .checkbox {
@@ -80,6 +82,42 @@
 
 .delete {
   --accent: var(--accent1);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45em;
+  opacity: 0.9;
+}
+
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--accent) / 0.4);
+  background-color: hsl(var(--muted));
+  padding: 0.08em 0.6em;
+  font-size: 0.63em;
+  text-decoration: none;
+}
+
+.priority-high {
+  border-color: hsl(var(--accent1));
+}
+
+.priority-medium {
+  border-color: hsl(var(--accent) / 0.7);
+}
+
+.priority-low {
+  border-color: hsl(var(--txt) / 0.35);
+}
+
+.notes {
+  font-size: 0.68em;
+  opacity: 0.85;
+  font-style: normal;
+  white-space: pre-wrap;
 }
 
 .loading {

@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 // styles
 import styles from './TaskItem.module.css';
 
@@ -9,12 +7,11 @@ import { PencilSquareIcon  } from '@heroicons/react/24/outline';
 import { TrashIcon } from '@heroicons/react/24/outline';
 
 const TaskItem = ({ task, deleteTask, toggleTask, enterEditMode }) => {
-  const [isChecked, setIsChecked ] = useState(task.checked);
-
-  const handleCheckboxChange = (e) =>{
-    setIsChecked(!isChecked);
+  const handleCheckboxChange = () => {
     toggleTask(task.id);
-  }
+  };
+
+  const dueLabel = task.dueDate ? new Date(`${task.dueDate}T00:00:00`).toLocaleDateString() : 'No due date';
 
   return (
     <li className={styles.task}>
@@ -22,7 +19,7 @@ const TaskItem = ({ task, deleteTask, toggleTask, enterEditMode }) => {
         <input
           type="checkbox"
           className={styles.checkbox}
-          checked={isChecked}
+          checked={task.checked}
           onChange={handleCheckboxChange}
           name={task.name}
           id={task.id}
@@ -31,7 +28,14 @@ const TaskItem = ({ task, deleteTask, toggleTask, enterEditMode }) => {
           htmlFor={task.id}
           className={styles.label}
         >
-          {task.name}
+          <span>{task.name}</span>
+          <small className={styles.meta}>
+            <span className={`${styles.pill} ${styles[`priority-${task.priority}`]}`}>{task.priority}</span>
+            <span className={styles.pill}>#{task.category}</span>
+            <span className={styles.pill}>{dueLabel}</span>
+            {task.repeat !== 'none' && <span className={styles.pill}>Repeats {task.repeat}</span>}
+          </small>
+          {task.notes && <em className={styles.notes}>{task.notes}</em>}
           <p className={styles.checkmark}>
             <CheckIcon strokeWidth={2} width={24} height={24}/>
           </p>

@@ -1,9 +1,7 @@
 .wrapper {
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    position: static;
     --wrapperSize: clamp(4em, 3vmax, 7em);
-    padding: 1em 2em;
+    padding: 0.2em 0;
     width: 100%;
     display: grid;
     --_size: 1.5rem;

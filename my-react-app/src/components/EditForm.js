@@ -5,6 +5,11 @@ import { CheckIcon } from '@heroicons/react/24/solid'
 
 const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
   const [updatedTaskName, setUpdatedTaskName] = useState(editedTask.name);
+  const [priority, setPriority] = useState(editedTask.priority ?? 'medium');
+  const [dueDate, setDueDate] = useState(editedTask.dueDate ?? '');
+  const [category, setCategory] = useState(editedTask.category ?? 'General');
+  const [repeat, setRepeat] = useState(editedTask.repeat ?? 'none');
+  const [notes, setNotes] = useState(editedTask.notes ?? '');
 
   useEffect(()=> {
     const closeModalIfEscaped = (e) => {
@@ -20,7 +25,15 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    updateTask({...editedTask, name: updatedTaskName})
+    updateTask({
+      ...editedTask,
+      name: updatedTaskName.trim(),
+      priority,
+      dueDate,
+      category: category.trim() || 'General',
+      repeat,
+      notes: notes.trim()
+    })
   }
 
   return (
@@ -30,7 +43,7 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
       onClick={(e) => {e.target === e.currentTarget && closeEditMode()}}
       >
       <form
-        className="todo"
+        className="todo edit-form"
         onSubmit={handleFormSubmit}
         >
         <div className="wrapper">
@@ -49,6 +62,44 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
             htmlFor="editTask"
             className="label"
           >Update Task</label>
+        </div>
+        <div className="advanced-grid">
+          <label>
+            Priority
+            <select className="input" value={priority} onChange={(e) => setPriority(e.target.value)}>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+          <label>
+            Due date
+            <input className="input" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          </label>
+          <label>
+            Category
+            <input className="input" type="text" maxLength={24} value={category} onChange={(e) => setCategory(e.target.value)} />
+          </label>
+          <label>
+            Repeat
+            <select className="input" value={repeat} onChange={(e) => setRepeat(e.target.value)}>
+              <option value="none">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </label>
+          <label className="full-width">
+            Notes
+            <textarea
+              className="input"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              maxLength={180}
+              rows={2}
+              placeholder="Optional notes"
+            />
+          </label>
         </div>
         <button
           className="btn"

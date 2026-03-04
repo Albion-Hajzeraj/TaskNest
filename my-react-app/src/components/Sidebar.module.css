@@ -1,0 +1,58 @@
+.sidebar {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  width: min(15rem, 92vw);
+  border: 1px solid hsl(var(--accent) / 0.35);
+  border-radius: calc(var(--_radius) * 3);
+  background: linear-gradient(180deg, hsl(var(--muted)), hsl(var(--bg)));
+  padding: 1rem 0.75rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.brand h2 {
+  font-size: 1.1rem;
+}
+
+.brand p {
+  opacity: 0.75;
+  font-size: 0.85rem;
+}
+
+.nav {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.link {
+  border: 1px solid hsl(var(--accent) / 0.2);
+  background-color: hsl(var(--bg));
+  color: hsl(var(--txt));
+  border-radius: calc(var(--_radius) * 2);
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+}
+
+.active {
+  border-color: hsl(var(--accent) / 0.75);
+  background-color: hsl(var(--accent) / 0.12);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: static;
+    width: 100%;
+  }
+
+  .nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .link {
+    text-align: center;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.2rem;
+  }
+}

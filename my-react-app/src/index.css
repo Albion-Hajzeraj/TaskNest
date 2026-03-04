@@ -13,7 +13,9 @@ button {
 }
 
 input,
-label {
+label,
+select,
+textarea {
   font: inherit;
 }
 
@@ -95,12 +97,11 @@ label {
 
 body {
   min-height: 100vh;
-  display: grid;
-  justify-items: center;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   background-color: hsl(var(--bg));
   color: hsl(var(--txt));
+  padding: 1rem;
 }
 
 ::selection {
@@ -114,10 +115,31 @@ h1 {
 }
 
 .container {
-  margin: 4vmax max(calc((100vw - 70rem) / 2), 1.5rem) 6em;
+  margin: 0;
   display: grid;
-  gap: clamp(2rem, 3.5vmax, 8rem);
+  gap: clamp(1.4rem, 2.5vmax, 3rem);
   text-align: center;
+}
+
+.app-shell {
+  max-width: 82rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+  align-items: start;
+}
+
+.main-panel {
+  border: 1px solid hsl(var(--accent) / 0.25);
+  border-radius: calc(var(--_radius) * 4);
+  background: linear-gradient(165deg, hsl(var(--bg)), hsl(var(--muted)));
+  padding: clamp(1rem, 2.2vw, 1.6rem);
+}
+
+.subtitle {
+  margin-top: 0.6em;
+  opacity: 0.8;
 }
 
 hr {
@@ -174,6 +196,18 @@ hr {
   text-align: left;
 }
 
+.form-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .wrapper {
   flex: 1 1 100%;
   position: relative;
@@ -207,6 +241,10 @@ hr {
   transition: box-shadow var(--_tspeed_fast) var(--_ttype_squish);
 }
 
+textarea.input {
+  resize: vertical;
+}
+
 .input:focus {
   outline: none;
   box-shadow: 0 0 0 0.2em hsl(var(--bg)), 0 0 0 0.4em hsl(var(--accent) / 0.8);
@@ -234,10 +272,155 @@ hr {
 }
 
 [role="dialog"] .todo {
-  max-width: 40ch;
+  max-width: min(58ch, 95vw);
   padding: 2em 1.3em 1.3em;
   background-color: hsl(var(--bg));
   border-radius: var(--_radius);
   border: 0.1em solid hsl(var(--accent) / 0.3);
   box-shadow: 0 -1em 3em hsl(var(--muted)), 0 1em 3em hsl(var(--accent) / 0.2);
+  display: grid;
+}
+
+.advanced-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  text-align: left;
+}
+
+.advanced-grid label {
+  font-size: 0.8rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.78;
+  grid-column: 1 / -1;
+}
+
+.stats-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+}
+
+.stat-card {
+  border: 1px solid hsl(var(--accent) / 0.35);
+  border-radius: calc(var(--_radius) * 3);
+  padding: 0.8rem;
+  background: linear-gradient(165deg, hsl(var(--muted)), hsl(var(--bg)));
+  display: grid;
+  gap: 0.2rem;
+}
+
+.stat-card strong {
+  font-size: 1.3rem;
+}
+
+.stat-card span {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.controls {
+  display: grid;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.view-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.tab-btn {
+  font-size: 0.85rem;
+}
+
+.tab-btn.active {
+  box-shadow: 0 0 0 hsl(var(--accent) / 0.3), 0 0 0 0.2em hsl(var(--bg)),
+    0 0 0 0.4em hsl(var(--accent) / 0.7);
+}
+
+.toolbar {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(12rem, 2fr) minmax(10rem, 1fr);
+}
+
+.bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.bulk-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-form {
+  gap: 0.7rem;
+}
+
+.panel-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.panel-card {
+  border: 1px solid hsl(var(--accent) / 0.32);
+  border-radius: calc(var(--_radius) * 3);
+  background-color: hsl(var(--bg));
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.panel-card h2 {
+  font-size: 1rem;
+}
+
+.compact-list {
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.compact-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px dashed hsl(var(--accent) / 0.2);
+  padding-bottom: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.compact-list small {
+  opacity: 0.72;
+}
+
+@media (max-width: 760px) {
+  body {
+    padding: 0.6rem;
+  }
+
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
 }

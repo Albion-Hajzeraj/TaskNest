@@ -62,6 +62,7 @@ const ThemeSwitcher = () => {
                 className='btn'
                 aria-label={`Change theme to ${theme === "light" ? "dark" : "light"} mode`}
                 role="switch"
+                aria-checked={theme === "dark"}
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
                 >
                 {theme === "dark" ? <SunIcon /> : <MoonIcon />}
