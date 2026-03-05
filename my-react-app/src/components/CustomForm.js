@@ -3,6 +3,20 @@ import { useState } from 'react';
 // library imports
 import { PlusIcon } from '@heroicons/react/24/solid'
 
+const PRIORITY_OPTIONS = ['high', 'medium', 'low'];
+const REPEAT_OPTIONS = ['none', 'daily', 'weekly', 'monthly'];
+const CATEGORY_SUGGESTIONS = [
+  'General',
+  'Cleaning',
+  'Work',
+  'Fitness',
+  'Hobby',
+  'Personal',
+  'Shopping',
+  'Study',
+  'Health'
+];
+
 const initialAdvanced = {
   priority: 'medium',
   dueDate: '',
@@ -86,9 +100,11 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
           <label>
             Priority
             <select className="input" value={advanced.priority} onChange={(e) => setField('priority', e.target.value)}>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              {PRIORITY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option[0].toUpperCase() + option.slice(1)}
+                </option>
+              ))}
             </select>
           </label>
           <label>
@@ -97,15 +113,28 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
           </label>
           <label>
             Category
-            <input className="input" type="text" maxLength={24} value={advanced.category} onChange={(e) => setField('category', e.target.value)} />
+            <input
+              className="input"
+              type="text"
+              list="task-category-suggestions"
+              maxLength={24}
+              value={advanced.category}
+              onChange={(e) => setField('category', e.target.value)}
+            />
+            <datalist id="task-category-suggestions">
+              {CATEGORY_SUGGESTIONS.map((category) => (
+                <option key={category} value={category} />
+              ))}
+            </datalist>
           </label>
           <label>
             Repeat
             <select className="input" value={advanced.repeat} onChange={(e) => setField('repeat', e.target.value)}>
-              <option value="none">None</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
+              {REPEAT_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option[0].toUpperCase() + option.slice(1)}
+                </option>
+              ))}
             </select>
           </label>
           <label className="full-width">

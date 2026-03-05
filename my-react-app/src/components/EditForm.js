@@ -3,6 +3,20 @@ import { useState, useEffect } from 'react';
 // library imports
 import { CheckIcon } from '@heroicons/react/24/solid'
 
+const PRIORITY_OPTIONS = ['high', 'medium', 'low'];
+const REPEAT_OPTIONS = ['none', 'daily', 'weekly', 'monthly'];
+const CATEGORY_SUGGESTIONS = [
+  'General',
+  'Cleaning',
+  'Work',
+  'Fitness',
+  'Hobby',
+  'Personal',
+  'Shopping',
+  'Study',
+  'Health'
+];
+
 const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
   const [updatedTaskName, setUpdatedTaskName] = useState(editedTask.name);
   const [priority, setPriority] = useState(editedTask.priority ?? 'medium');
@@ -67,9 +81,11 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
           <label>
             Priority
             <select className="input" value={priority} onChange={(e) => setPriority(e.target.value)}>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              {PRIORITY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option[0].toUpperCase() + option.slice(1)}
+                </option>
+              ))}
             </select>
           </label>
           <label>
@@ -78,15 +94,28 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
           </label>
           <label>
             Category
-            <input className="input" type="text" maxLength={24} value={category} onChange={(e) => setCategory(e.target.value)} />
+            <input
+              className="input"
+              type="text"
+              list="edit-task-category-suggestions"
+              maxLength={24}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
+            <datalist id="edit-task-category-suggestions">
+              {CATEGORY_SUGGESTIONS.map((item) => (
+                <option key={item} value={item} />
+              ))}
+            </datalist>
           </label>
           <label>
             Repeat
             <select className="input" value={repeat} onChange={(e) => setRepeat(e.target.value)}>
-              <option value="none">None</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
+              {REPEAT_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option[0].toUpperCase() + option.slice(1)}
+                </option>
+              ))}
             </select>
           </label>
           <label className="full-width">
