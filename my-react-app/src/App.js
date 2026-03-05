@@ -359,6 +359,24 @@ function App() {
         <header>
           <h1>TaskNest</h1>
           <p className="subtitle">Plan, prioritize, and finish your work with momentum.</p>
+          <div className="pulse-strip" aria-label="Current workload highlights">
+            <span className="pulse-chip">
+              <strong>{todayTasks.length}</strong>
+              due today
+            </span>
+            <span className="pulse-chip">
+              <strong>{overdueTasks.length}</strong>
+              overdue
+            </span>
+            <span className="pulse-chip">
+              <strong>{upcomingTasks.length}</strong>
+              upcoming
+            </span>
+            <span className="pulse-chip">
+              <strong>{stats.weekDone}</strong>
+              done this week
+            </span>
+          </div>
         </header>
         {
           isEditing && (

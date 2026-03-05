@@ -1,10 +1,15 @@
 .tasks {
   display: grid;
   list-style-type: none;
-  gap: 1.5em;
+  gap: 0.72rem;
+  margin-top: 0.75rem;
 }
 
 .empty {
   font-size: 1rem;
-  opacity: 0.85;
+  opacity: 0.78;
+  padding: 0.8rem;
+  border: 1px dashed hsl(var(--edge));
+  border-radius: calc(var(--_radius) * 0.75);
+  background: hsl(var(--surface) / 0.75);
 }

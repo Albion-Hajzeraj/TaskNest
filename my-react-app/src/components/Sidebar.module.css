@@ -3,41 +3,70 @@
   top: 1rem;
   align-self: start;
   width: min(15rem, 92vw);
-  border: 1px solid hsl(var(--accent) / 0.35);
-  border-radius: calc(var(--_radius) * 3);
-  background: linear-gradient(180deg, hsl(var(--muted)), hsl(var(--bg)));
-  padding: 1rem 0.75rem;
+  border: 1px solid hsl(var(--edge));
+  border-radius: calc(var(--_radius) * 1.1);
+  background:
+    radial-gradient(circle at 0 0, hsl(var(--glow) / 0.18), transparent 42%),
+    linear-gradient(180deg, hsl(var(--surface)), hsl(var(--muted)));
+  padding: 1rem 0.8rem;
   display: grid;
   gap: 0.9rem;
+  box-shadow: 0 0.8rem 1.8rem hsl(var(--txt) / 0.1);
 }
 
 .brand h2 {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
 }
 
 .brand p {
-  opacity: 0.75;
-  font-size: 0.85rem;
+  opacity: 0.76;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .nav {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .link {
-  border: 1px solid hsl(var(--accent) / 0.2);
-  background-color: hsl(var(--bg));
+  border: 1px solid hsl(var(--edge));
+  background-color: hsl(var(--surface));
   color: hsl(var(--txt));
-  border-radius: calc(var(--_radius) * 2);
+  border-radius: calc(var(--_radius) * 0.75);
   text-align: left;
-  padding: 0.55rem 0.65rem;
+  padding: 0.58rem 0.65rem;
   cursor: pointer;
+  display: grid;
+  gap: 0.15rem;
+  transition: transform var(--_tspeed_fast) ease, border-color var(--_tspeed_fast) ease, box-shadow var(--_tspeed_fast) ease;
+}
+
+.link:hover {
+  transform: translateX(2px);
+  border-color: hsl(var(--accent) / 0.35);
+}
+
+.link span {
+  font-weight: 700;
+}
+
+.link small {
+  opacity: 0.72;
+  font-size: 0.72rem;
 }
 
 .active {
-  border-color: hsl(var(--accent) / 0.75);
-  background-color: hsl(var(--accent) / 0.12);
+  border-color: transparent;
+  background: linear-gradient(160deg, hsl(var(--accent)), hsl(var(--glow)));
+  color: hsl(var(--muted));
+  box-shadow: 0 0.6rem 1.2rem hsl(var(--accent) / 0.32);
+}
+
+.active small {
+  opacity: 0.88;
 }
 
 @media (max-width: 900px) {
@@ -54,5 +83,6 @@
     text-align: center;
     font-size: 0.82rem;
     padding: 0.45rem 0.2rem;
+    justify-items: center;
   }
 }
