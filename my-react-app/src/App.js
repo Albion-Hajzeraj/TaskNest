@@ -1,14 +1,25 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-// custom hooks
-import useLocalStorage from './hooks/useLocalStorage'
+import useLocalStorage from './hooks/useLocalStorage';
 
-// custom components
-import CustomForm from './components/CustomForm'
-import EditForm from './components/EditForm'
-import Sidebar from './components/Sidebar'
-import TaskList from './components/TaskList'
-import ThemeSwitcher from './components/ThemeSwitcher'
+import CustomForm from './components/CustomForm';
+import EditForm from './components/EditForm';
+import Sidebar from './components/Sidebar';
+import TaskList from './components/TaskList';
+import SettingsPanel from './components/panels/SettingsPanel';
+import PanelCard from './components/ui/PanelCard';
+import StatCard from './components/ui/StatCard';
+
+const VIEWS = [
+  { id: 'all', label: 'All' },
+  { id: 'active', label: 'Active' },
+  { id: 'today', label: 'Today' },
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'completed', label: 'Completed' },
+  { id: 'overdue', label: 'Overdue' }
+];
+
+const PANEL_SHORTCUTS = { '1': 'overview', '2': 'tasks', '3': 'focus', '4': 'settings' };
 
 const startOfToday = () => {
   const today = new Date();
@@ -30,17 +41,26 @@ const isTaskOverdue = (task) => {
   return due.getTime() < today.getTime();
 };
 
+const isInputElement = (target) => {
+  const tag = target?.tagName?.toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable;
+};
+
 function App() {
   const [tasks, setTasks] = useLocalStorage('react-todo.tasks', []);
   const [activePanel, setActivePanel] = useLocalStorage('react-todo.panel', 'tasks');
   const [view, setView] = useState('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('created-desc');
+  const [density, setDensity] = useLocalStorage('react-todo.density', 'comfortable');
   const [lastDeletedBatch, setLastDeletedBatch] = useState([]);
   const [previousFocusEl, setPreviousFocusEl] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const importRef = useRef(null);
+
+  const taskInputRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const tabRefs = useRef([]);
 
   const createId = () =>
     typeof crypto !== 'undefined' && crypto.randomUUID
@@ -123,25 +143,25 @@ function App() {
   const addTask = (taskInput) => {
     const task = normalizeTask(taskInput);
     if (!task.name) return;
-    setTasks(prevState => [...prevState, task])
-  }
+    setTasks((prevState) => [...prevState, task]);
+  };
 
   const addTaskFromQuickInput = (rawText) => {
     const parsed = buildTaskFromText(rawText);
     if (!parsed.name) return;
-    setTasks(prevState => [...prevState, parsed]);
-  }
+    setTasks((prevState) => [...prevState, parsed]);
+  };
 
   const deleteTask = (id) => {
-    setTasks(prevState => {
+    setTasks((prevState) => {
       const removed = prevState.filter((t) => t.id === id);
       setLastDeletedBatch(removed);
-      return prevState.filter(t => t.id !== id);
+      return prevState.filter((t) => t.id !== id);
     });
-  }
+  };
 
   const toggleTask = (id) => {
-    setTasks(prevState => {
+    setTasks((prevState) => {
       const toggled = prevState.find((t) => t.id === id);
       if (!toggled) return prevState;
 
@@ -166,17 +186,28 @@ function App() {
 
       return nextTasks;
     });
-  }
+  };
+
+  const closeEditMode = () => {
+    setIsEditing(false);
+    previousFocusEl?.focus?.();
+  };
 
   const updateTask = (task) => {
     const normalized = normalizeTask(task);
-    setTasks(prevState => prevState.map(t => (
+    setTasks((prevState) => prevState.map((t) => (
       t.id === normalized.id
         ? { ...t, ...normalized }
         : t
-    )))
+    )));
     closeEditMode();
-  }
+  };
+
+  const enterEditMode = (task) => {
+    setEditedTask(task);
+    setIsEditing(true);
+    setPreviousFocusEl(document.activeElement);
+  };
 
   const markAllComplete = () => {
     setTasks((prevState) => prevState.map((task) => (
@@ -200,45 +231,42 @@ function App() {
     setLastDeletedBatch([]);
   };
 
-  const exportTasks = () => {
-    const payload = JSON.stringify(tasks, null, 2);
-    const blob = new Blob([payload], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `tasknest-export-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+  const resetWorkspaceFilters = () => {
+    setView('all');
+    setSortBy('created-desc');
+    setSearch('');
+    setActivePanel('tasks');
   };
 
-  const importTasks = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const openFocusPanel = () => setActivePanel('focus');
 
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      if (!Array.isArray(parsed)) throw new Error('Invalid file format');
-      const normalized = parsed.map(normalizeTask).filter((task) => task.name);
-      setTasks(normalized);
-    } catch (error) {
-      console.error(error);
-      alert('Could not import tasks. Please use a valid TaskNest JSON export.');
-    } finally {
-      event.target.value = '';
-    }
-  };
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      const key = event.key.toLowerCase();
+      const typing = isInputElement(event.target);
 
-  const closeEditMode = () => {
-    setIsEditing(false);
-    previousFocusEl?.focus?.();
-  }
+      if (event.altKey && PANEL_SHORTCUTS[event.key]) {
+        event.preventDefault();
+        setActivePanel(PANEL_SHORTCUTS[event.key]);
+        return;
+      }
 
-  const enterEditMode = (task) => {
-    setEditedTask(task);
-    setIsEditing(true);
-    setPreviousFocusEl(document.activeElement);
-  }
+      if (!typing && key === 'n') {
+        event.preventDefault();
+        setActivePanel('tasks');
+        taskInputRef.current?.focus();
+      }
+
+      if (!typing && event.key === '/') {
+        event.preventDefault();
+        setActivePanel('tasks');
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [setActivePanel]);
 
   const filteredTasks = useMemo(() => {
     const base = tasks.filter((task) => {
@@ -258,10 +286,10 @@ function App() {
     const query = search.trim().toLowerCase();
     const searched = query
       ? base.filter((task) => (
-          task.name.toLowerCase().includes(query) ||
-          task.category.toLowerCase().includes(query) ||
-          task.notes.toLowerCase().includes(query)
-        ))
+        task.name.toLowerCase().includes(query) ||
+        task.category.toLowerCase().includes(query) ||
+        task.notes.toLowerCase().includes(query)
+      ))
       : base;
 
     const priorityWeight = { high: 3, medium: 2, low: 1 };
@@ -290,7 +318,6 @@ function App() {
   const stats = useMemo(() => {
     const completed = tasks.filter((task) => task.checked).length;
     const overdue = tasks.filter((task) => isTaskOverdue(task)).length;
-    const todayDone = tasks.filter((task) => task.completedAt && isTodayDate(task.completedAt.slice(0, 10))).length;
 
     const now = new Date();
     const day = now.getDay();
@@ -306,19 +333,9 @@ function App() {
       active: tasks.length - completed,
       overdue,
       completionRate: tasks.length ? Math.round((completed / tasks.length) * 100) : 0,
-      todayDone,
       weekDone
     };
   }, [tasks]);
-
-  const views = [
-    { id: 'all', label: 'All' },
-    { id: 'active', label: 'Active' },
-    { id: 'today', label: 'Today' },
-    { id: 'upcoming', label: 'Upcoming' },
-    { id: 'completed', label: 'Completed' },
-    { id: 'overdue', label: 'Overdue' }
-  ];
 
   const todayTasks = useMemo(
     () => tasks.filter((task) => !task.checked && isTodayDate(task.dueDate)),
@@ -352,10 +369,21 @@ function App() {
       .slice(0, 5);
   }, [tasks]);
 
+  const handleViewTabKeyDown = (event, currentIndex) => {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+
+    event.preventDefault();
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    const nextIndex = (currentIndex + direction + VIEWS.length) % VIEWS.length;
+    const nextView = VIEWS[nextIndex];
+    setView(nextView.id);
+    tabRefs.current[nextIndex]?.focus();
+  };
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell density-${density}`}>
       <Sidebar activePanel={activePanel} setActivePanel={setActivePanel} stats={stats} />
-      <div className="container main-panel">
+      <main className="container main-panel">
         <header>
           <h1>TaskNest</h1>
           <p className="subtitle">Plan, prioritize, and finish your work with momentum.</p>
@@ -378,61 +406,63 @@ function App() {
             </span>
           </div>
         </header>
-        {
-          isEditing && (
-            <EditForm
-              editedTask={editedTask}
-              updateTask={updateTask}
-              closeEditMode={closeEditMode}
-            />
-          )
-        }
+
+        {isEditing && (
+          <EditForm
+            editedTask={editedTask}
+            updateTask={updateTask}
+            closeEditMode={closeEditMode}
+          />
+        )}
 
         {activePanel === 'overview' && (
-          <>
+          <section id="panel-overview" aria-label="Overview">
             <section className="stats-grid" aria-label="Task statistics">
-              <article className="stat-card"><strong>{stats.total}</strong><span>Total</span></article>
-              <article className="stat-card"><strong>{stats.active}</strong><span>Active</span></article>
-              <article className="stat-card"><strong>{stats.completed}</strong><span>Completed</span></article>
-              <article className="stat-card"><strong>{stats.overdue}</strong><span>Overdue</span></article>
-              <article className="stat-card"><strong>{stats.completionRate}%</strong><span>Completion</span></article>
-              <article className="stat-card"><strong>{stats.weekDone}</strong><span>Done this week</span></article>
+              <StatCard value={stats.total} label="Total" />
+              <StatCard value={stats.active} label="Active" />
+              <StatCard value={stats.completed} label="Completed" />
+              <StatCard value={stats.overdue} label="Overdue" />
+              <StatCard value={`${stats.completionRate}%`} label="Completion" />
+              <StatCard value={stats.weekDone} label="Done this week" />
             </section>
             <section className="panel-grid">
-              <article className="panel-card">
-                <h2>Upcoming</h2>
+              <PanelCard title="Upcoming">
                 <ul className="compact-list">
                   {upcomingTasks.map((task) => (
                     <li key={task.id}>{task.name} <small>{new Date(`${task.dueDate}T00:00:00`).toLocaleDateString()}</small></li>
                   ))}
                   {!upcomingTasks.length && <li>No upcoming due dates.</li>}
                 </ul>
-              </article>
-              <article className="panel-card">
-                <h2>Top categories</h2>
+              </PanelCard>
+              <PanelCard title="Top categories">
                 <ul className="compact-list">
                   {topCategories.map(([category, count]) => (
                     <li key={category}>{category} <small>{count} tasks</small></li>
                   ))}
                   {!topCategories.length && <li>No categories yet.</li>}
                 </ul>
-              </article>
+              </PanelCard>
             </section>
-          </>
+          </section>
         )}
 
         {activePanel === 'tasks' && (
-          <>
-            <CustomForm addTask={addTask} addTaskFromQuickInput={addTaskFromQuickInput} />
+          <section id="panel-tasks" aria-label="Tasks">
+            <CustomForm ref={taskInputRef} addTask={addTask} addTaskFromQuickInput={addTaskFromQuickInput} />
             <section className="controls" aria-label="Task controls">
-              <div className="view-tabs" role="tablist" aria-label="Views">
-                {views.map((item) => (
+              <div className="view-tabs" role="tablist" aria-label="Task views">
+                {VIEWS.map((item, index) => (
                   <button
                     key={item.id}
+                    ref={(el) => { tabRefs.current[index] = el; }}
                     className={`btn tab-btn ${view === item.id ? 'active' : ''}`}
                     role="tab"
+                    id={`view-tab-${item.id}`}
+                    aria-controls="task-list-panel"
                     aria-selected={view === item.id}
+                    tabIndex={view === item.id ? 0 : -1}
                     onClick={() => setView(item.id)}
+                    onKeyDown={(event) => handleViewTabKeyDown(event, index)}
                     type="button"
                   >
                     {item.label}
@@ -442,6 +472,7 @@ function App() {
 
               <div className="toolbar">
                 <input
+                  ref={searchInputRef}
                   className="input"
                   type="search"
                   value={search}
@@ -470,20 +501,21 @@ function App() {
                 <button className="btn" type="button" onClick={undoDelete} disabled={!lastDeletedBatch.length}>Undo delete</button>
               </div>
             </section>
-            <TaskList
-              tasks={filteredTasks}
-              deleteTask={deleteTask}
-              toggleTask={toggleTask}
-              enterEditMode={enterEditMode}
-              emptyMessage="No tasks match this view."
-            />
-          </>
+            <section id="task-list-panel" role="tabpanel" aria-labelledby={`view-tab-${view}`}>
+              <TaskList
+                tasks={filteredTasks}
+                deleteTask={deleteTask}
+                toggleTask={toggleTask}
+                enterEditMode={enterEditMode}
+                emptyMessage="No tasks match this view."
+              />
+            </section>
+          </section>
         )}
 
         {activePanel === 'focus' && (
-          <section className="panel-grid">
-            <article className="panel-card">
-              <h2>Due today</h2>
+          <section id="panel-focus" className="panel-grid" aria-label="Focus">
+            <PanelCard title="Due today">
               <TaskList
                 tasks={todayTasks}
                 deleteTask={deleteTask}
@@ -491,9 +523,8 @@ function App() {
                 enterEditMode={enterEditMode}
                 emptyMessage="Nothing due today."
               />
-            </article>
-            <article className="panel-card">
-              <h2>Overdue</h2>
+            </PanelCard>
+            <PanelCard title="Overdue">
               <TaskList
                 tasks={overdueTasks}
                 deleteTask={deleteTask}
@@ -501,29 +532,24 @@ function App() {
                 enterEditMode={enterEditMode}
                 emptyMessage="No overdue tasks."
               />
-            </article>
+            </PanelCard>
           </section>
         )}
 
         {activePanel === 'settings' && (
-          <section className="panel-grid">
-            <article className="panel-card">
-              <h2>Data</h2>
-              <div className="bulk-actions">
-                <button className="btn" type="button" onClick={exportTasks}>Export JSON</button>
-                <button className="btn" type="button" onClick={() => importRef.current?.click()}>Import JSON</button>
-                <input ref={importRef} type="file" accept="application/json" hidden onChange={importTasks} />
-              </div>
-            </article>
-            <article className="panel-card">
-              <h2>Theme</h2>
-              <ThemeSwitcher />
-            </article>
+          <section id="panel-settings">
+            <SettingsPanel
+              density={density}
+              setDensity={setDensity}
+              resetWorkspaceFilters={resetWorkspaceFilters}
+              openFocusPanel={openFocusPanel}
+              stats={stats}
+            />
           </section>
         )}
-      </div>
+      </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

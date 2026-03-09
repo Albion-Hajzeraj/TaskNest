@@ -6,11 +6,11 @@ import styles from './TaskList.module.css';
 
 const TaskList = ({ tasks, deleteTask, toggleTask, enterEditMode, emptyMessage = 'No tasks yet.' }) => {
   if (!tasks.length) {
-    return <p className={styles.empty}>{emptyMessage}</p>;
+    return <p className={styles.empty} role="status" aria-live="polite">{emptyMessage}</p>;
   }
 
   return (
-    <ul className={styles.tasks}>
+    <ul className={styles.tasks} aria-live="polite">
       {tasks.map(task => (
         <TaskItem
           key={task.id}

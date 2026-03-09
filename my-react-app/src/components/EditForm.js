@@ -2,20 +2,7 @@ import { useState, useEffect } from 'react';
 
 // library imports
 import { CheckIcon } from '@heroicons/react/24/solid'
-
-const PRIORITY_OPTIONS = ['high', 'medium', 'low'];
-const REPEAT_OPTIONS = ['none', 'daily', 'weekly', 'monthly'];
-const CATEGORY_SUGGESTIONS = [
-  'General',
-  'Cleaning',
-  'Work',
-  'Fitness',
-  'Hobby',
-  'Personal',
-  'Shopping',
-  'Study',
-  'Health'
-];
+import { CATEGORY_SUGGESTIONS, PRIORITY_OPTIONS, REPEAT_OPTIONS } from '../features/tasks/constants';
 
 const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
   const [updatedTaskName, setUpdatedTaskName] = useState(editedTask.name);

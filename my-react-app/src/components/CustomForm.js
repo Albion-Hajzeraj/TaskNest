@@ -1,33 +1,17 @@
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 
 // library imports
 import { PlusIcon } from '@heroicons/react/24/solid'
+import {
+  CATEGORY_SUGGESTIONS,
+  INITIAL_ADVANCED_TASK_FIELDS,
+  PRIORITY_OPTIONS,
+  REPEAT_OPTIONS
+} from '../features/tasks/constants';
 
-const PRIORITY_OPTIONS = ['high', 'medium', 'low'];
-const REPEAT_OPTIONS = ['none', 'daily', 'weekly', 'monthly'];
-const CATEGORY_SUGGESTIONS = [
-  'General',
-  'Cleaning',
-  'Work',
-  'Fitness',
-  'Hobby',
-  'Personal',
-  'Shopping',
-  'Study',
-  'Health'
-];
-
-const initialAdvanced = {
-  priority: 'medium',
-  dueDate: '',
-  category: 'General',
-  notes: '',
-  repeat: 'none'
-};
-
-const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
+const CustomForm = forwardRef(({ addTask, addTaskFromQuickInput }, taskInputRef) => {
   const [task, setTask] = useState("");
-  const [advanced, setAdvanced] = useState(initialAdvanced);
+  const [advanced, setAdvanced] = useState(INITIAL_ADVANCED_TASK_FIELDS);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFormSubmit = (e) => {
@@ -40,14 +24,14 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
       ...advanced
     });
     setTask("");
-    setAdvanced(initialAdvanced);
+    setAdvanced(INITIAL_ADVANCED_TASK_FIELDS);
   };
 
   const handleQuickSubmit = (e) => {
     e.preventDefault();
     addTaskFromQuickInput(task);
     setTask("");
-    setAdvanced(initialAdvanced);
+    setAdvanced(INITIAL_ADVANCED_TASK_FIELDS);
   };
 
   const setField = (field, value) => {
@@ -59,9 +43,11 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
       <form
         className="todo"
         onSubmit={handleFormSubmit}
+        aria-label="Create a new task"
       >
         <div className="wrapper">
           <input
+            ref={taskInputRef}
             type="text"
             id="task"
             className="input"
@@ -87,7 +73,13 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
       </form>
 
       <div className="form-actions">
-        <button className="btn" type="button" onClick={() => setShowAdvanced((prev) => !prev)}>
+        <button
+          className="btn"
+          type="button"
+          onClick={() => setShowAdvanced((prev) => !prev)}
+          aria-expanded={showAdvanced}
+          aria-controls="advanced-task-options"
+        >
           {showAdvanced ? 'Hide advanced' : 'Show advanced'}
         </button>
         <button className="btn" type="button" onClick={handleQuickSubmit}>
@@ -96,7 +88,7 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
       </div>
 
       {showAdvanced && (
-        <div className="advanced-grid">
+        <div className="advanced-grid" id="advanced-task-options">
           <label>
             Priority
             <select className="input" value={advanced.priority} onChange={(e) => setField('priority', e.target.value)}>
@@ -153,5 +145,8 @@ const CustomForm = ({ addTask, addTaskFromQuickInput }) => {
       )}
     </section>
   )
-}
+});
+
+CustomForm.displayName = 'CustomForm';
+
 export default CustomForm

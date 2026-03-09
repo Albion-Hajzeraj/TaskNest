@@ -5,7 +5,7 @@ const Sidebar = ({ activePanel, setActivePanel, stats }) => {
     { id: 'overview', label: 'Overview', hint: `${stats.completionRate}% done` },
     { id: 'tasks', label: 'Tasks', hint: `${stats.total} total` },
     { id: 'focus', label: 'Focus', hint: `${stats.overdue} overdue` },
-    { id: 'settings', label: 'Settings', hint: 'Theme and data' }
+    { id: 'settings', label: 'Settings', hint: 'Theme and productivity' }
   ];
 
   return (
@@ -14,13 +14,15 @@ const Sidebar = ({ activePanel, setActivePanel, stats }) => {
         <h2>TaskNest</h2>
         <p>{stats.active} active tasks</p>
       </div>
-      <nav className={styles.nav}>
+      <nav className={styles.nav} aria-label="Workspace sections">
         {items.map((item) => (
           <button
             key={item.id}
             type="button"
             className={`${styles.link} ${activePanel === item.id ? styles.active : ''}`}
             onClick={() => setActivePanel(item.id)}
+            aria-current={activePanel === item.id ? 'page' : undefined}
+            aria-label={`${item.label} panel, ${item.hint}`}
           >
             <span>{item.label}</span>
             <small>{item.hint}</small>
