@@ -32,23 +32,23 @@ textarea {
   --_space-md: 1rem;
   --_space-lg: 1.5rem;
 
-  --bg--light: 211 40% 96%;
-  --txt--light: 216 34% 15%;
-  --accent--light: 205 86% 46%;
+  --bg--light: var(--_hue) 36% 96%;
+  --txt--light: var(--_hue) 32% 15%;
+  --accent--light: var(--_hue) 86% 46%;
   --accent1--light: 4 75% 54%;
-  --muted--light: 210 42% 98%;
-  --surface--light: 211 36% 93%;
-  --edge--light: 212 30% 78%;
-  --glow--light: 190 92% 48%;
+  --muted--light: var(--_hue) 42% 98%;
+  --surface--light: var(--_hue) 34% 93%;
+  --edge--light: var(--_hue) 24% 78%;
+  --glow--light: calc(var(--_hue) - 18) 92% 48%;
 
-  --bg--dark: 218 30% 10%;
-  --txt--dark: 210 35% 92%;
-  --accent--dark: 201 88% 60%;
+  --bg--dark: var(--_hue) 26% 10%;
+  --txt--dark: var(--_hue) 34% 92%;
+  --accent--dark: var(--_hue) 88% 60%;
   --accent1--dark: 8 82% 64%;
-  --muted--dark: 217 28% 13%;
-  --surface--dark: 217 25% 16%;
-  --edge--dark: 216 20% 34%;
-  --glow--dark: 189 82% 58%;
+  --muted--dark: var(--_hue) 24% 13%;
+  --surface--dark: var(--_hue) 22% 16%;
+  --edge--dark: var(--_hue) 18% 34%;
+  --glow--dark: calc(var(--_hue) - 18) 82% 58%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -202,6 +202,26 @@ h1 {
 .pulse-chip strong {
   font-size: 0.88rem;
   letter-spacing: 0;
+}
+
+.sync-row {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.sync-status {
+  font-size: 0.84rem;
+  opacity: 0.9;
+}
+
+.sync-status.is-error {
+  color: hsl(var(--accent1));
+  opacity: 1;
+  font-weight: 600;
 }
 
 .btn {
@@ -650,6 +670,10 @@ kbd {
 
   .controls {
     padding: 0.75rem;
+  }
+
+  .sync-row .btn {
+    width: auto;
   }
 
   .view-tabs {

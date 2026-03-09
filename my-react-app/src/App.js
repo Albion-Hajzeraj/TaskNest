@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import useLocalStorage from './hooks/useLocalStorage';
+import { createTask, deleteTask as deleteTaskApi, getTasks, updateTask as updateTaskApi } from './services/tasks-api';
 
 import CustomForm from './components/CustomForm';
 import EditForm from './components/EditForm';
@@ -46,8 +47,21 @@ const isInputElement = (target) => {
   return tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable;
 };
 
+const normalizeTask = (taskInput) => ({
+  id: taskInput.id,
+  name: (taskInput.name ?? '').trim(),
+  checked: Boolean(taskInput.checked),
+  priority: taskInput.priority ?? 'medium',
+  dueDate: taskInput.dueDate ?? '',
+  category: (taskInput.category ?? 'General').trim() || 'General',
+  notes: (taskInput.notes ?? '').trim(),
+  repeat: taskInput.repeat ?? 'none',
+  createdAt: taskInput.createdAt ?? null,
+  completedAt: taskInput.completedAt ?? null
+});
+
 function App() {
-  const [tasks, setTasks] = useLocalStorage('react-todo.tasks', []);
+  const [tasks, setTasks] = useState([]);
   const [activePanel, setActivePanel] = useLocalStorage('react-todo.panel', 'tasks');
   const [view, setView] = useState('all');
   const [search, setSearch] = useState('');
@@ -57,15 +71,34 @@ function App() {
   const [previousFocusEl, setPreviousFocusEl] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   const taskInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const tabRefs = useRef([]);
 
-  const createId = () =>
-    typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  const setErrorFromUnknown = useCallback((error) => {
+    setApiError(error instanceof Error ? error.message : 'Unexpected API error');
+  }, []);
+
+  const loadTasks = useCallback(async () => {
+    setApiError('');
+    setIsLoading(true);
+    try {
+      const remoteTasks = await getTasks();
+      setTasks(Array.isArray(remoteTasks) ? remoteTasks.map(normalizeTask) : []);
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setErrorFromUnknown]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   const getNextDueDate = (dueDate, repeat) => {
     if (!dueDate || repeat === 'none') return '';
@@ -75,19 +108,6 @@ function App() {
     if (repeat === 'monthly') date.setMonth(date.getMonth() + 1);
     return date.toISOString().slice(0, 10);
   };
-
-  const normalizeTask = (taskInput) => ({
-    id: taskInput.id ?? createId(),
-    name: (taskInput.name ?? '').trim(),
-    checked: Boolean(taskInput.checked),
-    priority: taskInput.priority ?? 'medium',
-    dueDate: taskInput.dueDate ?? '',
-    category: (taskInput.category ?? 'General').trim() || 'General',
-    notes: (taskInput.notes ?? '').trim(),
-    repeat: taskInput.repeat ?? 'none',
-    createdAt: taskInput.createdAt ?? new Date().toISOString(),
-    completedAt: taskInput.completedAt ?? null
-  });
 
   const buildTaskFromText = (rawText) => {
     const cleaned = rawText.trim();
@@ -133,59 +153,78 @@ function App() {
       keep.push(token);
     });
 
-    return normalizeTask({
+    return {
       name: keep.join(' '),
       checked: false,
       ...data
-    });
+    };
   };
 
-  const addTask = (taskInput) => {
-    const task = normalizeTask(taskInput);
-    if (!task.name) return;
-    setTasks((prevState) => [...prevState, task]);
+  const addTask = async (taskInput) => {
+    const payload = normalizeTask(taskInput);
+    if (!payload.name) return;
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      const created = await createTask(payload);
+      setTasks((prevState) => [...prevState, normalizeTask(created)]);
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const addTaskFromQuickInput = (rawText) => {
+  const addTaskFromQuickInput = async (rawText) => {
     const parsed = buildTaskFromText(rawText);
     if (!parsed.name) return;
-    setTasks((prevState) => [...prevState, parsed]);
+    await addTask(parsed);
   };
 
-  const deleteTask = (id) => {
-    setTasks((prevState) => {
-      const removed = prevState.filter((t) => t.id === id);
+  const deleteTask = async (id) => {
+    const removed = tasks.filter((task) => task.id === id);
+    if (!removed.length) return;
+
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      await deleteTaskApi(id);
       setLastDeletedBatch(removed);
-      return prevState.filter((t) => t.id !== id);
-    });
+      setTasks((prevState) => prevState.filter((task) => task.id !== id));
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const toggleTask = (id) => {
-    setTasks((prevState) => {
-      const toggled = prevState.find((t) => t.id === id);
-      if (!toggled) return prevState;
+  const toggleTask = async (id) => {
+    const task = tasks.find((item) => item.id === id);
+    if (!task) return;
 
-      const nextChecked = !toggled.checked;
-      const nextTasks = prevState.map((t) => (
-        t.id === id
-          ? { ...t, checked: nextChecked, completedAt: nextChecked ? new Date().toISOString() : null }
-          : t
-      ));
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      const toggled = await updateTaskApi(id, { checked: !task.checked });
+      setTasks((prevState) => prevState.map((item) => (item.id === id ? normalizeTask(toggled) : item)));
 
-      if (!toggled.checked && toggled.repeat && toggled.repeat !== 'none') {
-        const recurringTask = normalizeTask({
-          ...toggled,
-          id: createId(),
+      if (!task.checked && task.repeat && task.repeat !== 'none') {
+        const recurringPayload = {
+          ...task,
           checked: false,
           completedAt: null,
-          createdAt: new Date().toISOString(),
-          dueDate: getNextDueDate(toggled.dueDate, toggled.repeat)
-        });
-        return [...nextTasks, recurringTask];
+          createdAt: undefined,
+          dueDate: getNextDueDate(task.dueDate, task.repeat)
+        };
+        delete recurringPayload.id;
+        const recurring = await createTask(recurringPayload);
+        setTasks((prevState) => [...prevState, normalizeTask(recurring)]);
       }
-
-      return nextTasks;
-    });
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const closeEditMode = () => {
@@ -193,14 +232,22 @@ function App() {
     previousFocusEl?.focus?.();
   };
 
-  const updateTask = (task) => {
+  const updateTask = async (task) => {
     const normalized = normalizeTask(task);
-    setTasks((prevState) => prevState.map((t) => (
-      t.id === normalized.id
-        ? { ...t, ...normalized }
-        : t
-    )));
-    closeEditMode();
+    if (!normalized.id) return;
+
+    const { id, ...payload } = normalized;
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      const updated = await updateTaskApi(id, payload);
+      setTasks((prevState) => prevState.map((item) => (item.id === id ? normalizeTask(updated) : item)));
+      closeEditMode();
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const enterEditMode = (task) => {
@@ -209,26 +256,59 @@ function App() {
     setPreviousFocusEl(document.activeElement);
   };
 
-  const markAllComplete = () => {
-    setTasks((prevState) => prevState.map((task) => (
-      task.checked
-        ? task
-        : { ...task, checked: true, completedAt: new Date().toISOString() }
-    )));
+  const markAllComplete = async () => {
+    const activeTasks = tasks.filter((task) => !task.checked);
+    if (!activeTasks.length) return;
+
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      const updates = await Promise.all(activeTasks.map((task) => updateTaskApi(task.id, { checked: true })));
+      const byId = new Map(updates.map((task) => [task.id, normalizeTask(task)]));
+      setTasks((prevState) => prevState.map((task) => byId.get(task.id) || task));
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const clearCompleted = () => {
-    setTasks((prevState) => {
-      const removed = prevState.filter((task) => task.checked);
-      setLastDeletedBatch(removed);
-      return prevState.filter((task) => !task.checked);
-    });
+  const clearCompleted = async () => {
+    const completedTasks = tasks.filter((task) => task.checked);
+    if (!completedTasks.length) return;
+
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      await Promise.all(completedTasks.map((task) => deleteTaskApi(task.id)));
+      setLastDeletedBatch(completedTasks);
+      setTasks((prevState) => prevState.filter((task) => !task.checked));
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const undoDelete = () => {
+  const undoDelete = async () => {
     if (!lastDeletedBatch.length) return;
-    setTasks((prevState) => [...prevState, ...lastDeletedBatch]);
-    setLastDeletedBatch([]);
+
+    setApiError('');
+    setIsSyncing(true);
+    try {
+      const recreated = await Promise.all(lastDeletedBatch.map((task) => {
+        const payload = { ...task };
+        delete payload.id;
+        return createTask(payload);
+      }));
+
+      setTasks((prevState) => [...prevState, ...recreated.map(normalizeTask)]);
+      setLastDeletedBatch([]);
+    } catch (error) {
+      setErrorFromUnknown(error);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const resetWorkspaceFilters = () => {
@@ -242,12 +322,13 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event) => {
-      const key = event.key.toLowerCase();
+      const key = typeof event.key === 'string' ? event.key.toLowerCase() : '';
       const typing = isInputElement(event.target);
+      if (!key) return;
 
-      if (event.altKey && PANEL_SHORTCUTS[event.key]) {
+      if (event.altKey && PANEL_SHORTCUTS[key]) {
         event.preventDefault();
-        setActivePanel(PANEL_SHORTCUTS[event.key]);
+        setActivePanel(PANEL_SHORTCUTS[key]);
         return;
       }
 
@@ -295,8 +376,8 @@ function App() {
     const priorityWeight = { high: 3, medium: 2, low: 1 };
     const copy = [...searched];
     copy.sort((a, b) => {
-      if (sortBy === 'created-asc') return new Date(a.createdAt) - new Date(b.createdAt);
-      if (sortBy === 'created-desc') return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === 'created-asc') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      if (sortBy === 'created-desc') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       if (sortBy === 'priority-desc') return priorityWeight[b.priority] - priorityWeight[a.priority];
       if (sortBy === 'priority-asc') return priorityWeight[a.priority] - priorityWeight[b.priority];
       if (sortBy === 'due-asc') {
@@ -380,6 +461,8 @@ function App() {
     tabRefs.current[nextIndex]?.focus();
   };
 
+  const isBusy = isLoading || isSyncing;
+
   return (
     <div className={`app-shell density-${density}`}>
       <Sidebar activePanel={activePanel} setActivePanel={setActivePanel} stats={stats} />
@@ -404,6 +487,14 @@ function App() {
               <strong>{stats.weekDone}</strong>
               done this week
             </span>
+          </div>
+          <div className="sync-row" role="status" aria-live="polite">
+            <p className={`sync-status ${apiError ? 'is-error' : ''}`}>
+              {apiError ? `Backend sync error: ${apiError}` : isBusy ? 'Syncing with backend...' : 'All changes synced'}
+            </p>
+            <button className="btn" type="button" onClick={loadTasks} disabled={isBusy}>
+              Refresh data
+            </button>
           </div>
         </header>
 
@@ -431,7 +522,7 @@ function App() {
                   {upcomingTasks.map((task) => (
                     <li key={task.id}>{task.name} <small>{new Date(`${task.dueDate}T00:00:00`).toLocaleDateString()}</small></li>
                   ))}
-                  {!upcomingTasks.length && <li>No upcoming due dates.</li>}
+                  {!upcomingTasks.length && <li>{isLoading ? 'Loading upcoming tasks...' : 'No upcoming due dates.'}</li>}
                 </ul>
               </PanelCard>
               <PanelCard title="Top categories">
@@ -439,7 +530,7 @@ function App() {
                   {topCategories.map(([category, count]) => (
                     <li key={category}>{category} <small>{count} tasks</small></li>
                   ))}
-                  {!topCategories.length && <li>No categories yet.</li>}
+                  {!topCategories.length && <li>{isLoading ? 'Loading categories...' : 'No categories yet.'}</li>}
                 </ul>
               </PanelCard>
             </section>
@@ -496,9 +587,9 @@ function App() {
               </div>
 
               <div className="bulk-actions">
-                <button className="btn" type="button" onClick={markAllComplete}>Complete all</button>
-                <button className="btn" type="button" onClick={clearCompleted}>Clear completed</button>
-                <button className="btn" type="button" onClick={undoDelete} disabled={!lastDeletedBatch.length}>Undo delete</button>
+                <button className="btn" type="button" onClick={markAllComplete} disabled={isBusy}>Complete all</button>
+                <button className="btn" type="button" onClick={clearCompleted} disabled={isBusy}>Clear completed</button>
+                <button className="btn" type="button" onClick={undoDelete} disabled={isBusy || !lastDeletedBatch.length}>Undo delete</button>
               </div>
             </section>
             <section id="task-list-panel" role="tabpanel" aria-labelledby={`view-tab-${view}`}>
@@ -507,7 +598,7 @@ function App() {
                 deleteTask={deleteTask}
                 toggleTask={toggleTask}
                 enterEditMode={enterEditMode}
-                emptyMessage="No tasks match this view."
+                emptyMessage={isLoading ? 'Loading tasks from backend...' : 'No tasks match this view.'}
               />
             </section>
           </section>
@@ -521,7 +612,7 @@ function App() {
                 deleteTask={deleteTask}
                 toggleTask={toggleTask}
                 enterEditMode={enterEditMode}
-                emptyMessage="Nothing due today."
+                emptyMessage={isLoading ? 'Loading...' : 'Nothing due today.'}
               />
             </PanelCard>
             <PanelCard title="Overdue">
@@ -530,7 +621,7 @@ function App() {
                 deleteTask={deleteTask}
                 toggleTask={toggleTask}
                 enterEditMode={enterEditMode}
-                emptyMessage="No overdue tasks."
+                emptyMessage={isLoading ? 'Loading...' : 'No overdue tasks.'}
               />
             </PanelCard>
           </section>

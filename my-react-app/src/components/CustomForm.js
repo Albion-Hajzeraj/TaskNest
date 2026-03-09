@@ -104,7 +104,7 @@ const CustomForm = forwardRef(({ addTask, addTaskFromQuickInput }, taskInputRef)
             <input className="input" type="date" value={advanced.dueDate} onChange={(e) => setField('dueDate', e.target.value)} />
           </label>
           <label>
-            Category
+            Task type
             <input
               className="input"
               type="text"
@@ -112,12 +112,9 @@ const CustomForm = forwardRef(({ addTask, addTaskFromQuickInput }, taskInputRef)
               maxLength={24}
               value={advanced.category}
               onChange={(e) => setField('category', e.target.value)}
+              placeholder="Work, Study, Cleaning..."
+              aria-label="Task type"
             />
-            <datalist id="task-category-suggestions">
-              {CATEGORY_SUGGESTIONS.map((category) => (
-                <option key={category} value={category} />
-              ))}
-            </datalist>
           </label>
           <label>
             Repeat
@@ -140,9 +137,16 @@ const CustomForm = forwardRef(({ addTask, addTaskFromQuickInput }, taskInputRef)
               placeholder="Optional notes"
             />
           </label>
+          <p className="hint">Task type examples: Work, Study, Cleaning, Home, Finance, Errands</p>
           <p className="hint">Quick add format: `Buy milk tomorrow !high #home repeat:weekly`</p>
         </div>
       )}
+
+      <datalist id="task-category-suggestions">
+        {CATEGORY_SUGGESTIONS.map((category) => (
+          <option key={category} value={category} />
+        ))}
+      </datalist>
     </section>
   )
 });
