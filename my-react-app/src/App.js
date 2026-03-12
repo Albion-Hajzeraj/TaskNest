@@ -118,6 +118,7 @@ function App() {
   const [pomodoroMode, setPomodoroMode] = useState('work');
   const [pomodoroSecondsLeft, setPomodoroSecondsLeft] = useState(WORK_DURATION_SECONDS);
   const [pomodoroRunning, setPomodoroRunning] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const taskInputRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -620,6 +621,11 @@ function App() {
       .slice(0, 6);
   }, [tasks]);
 
+  const activeTasks = useMemo(
+    () => tasks.filter((task) => !task.checked).slice(0, 6),
+    [tasks]
+  );
+
   const selectedDayTasks = useMemo(() => {
     if (!selectedDate) return [];
     return filteredTasks.filter((task) => task.dueDate === selectedDate);
@@ -649,6 +655,14 @@ function App() {
   };
 
   const isBusy = isLoading || isSyncing;
+
+  const navItems = useMemo(() => ([
+    { id: 'overview', label: 'Dashboard', hint: `${stats.completionRate}% done` },
+    { id: 'tasks', label: 'Tasks', hint: `${stats.total} total` },
+    { id: 'calendar', label: 'Calendar', hint: 'Schedule' },
+    { id: 'analytics', label: 'Analytics', hint: `Level ${gamification.level}` },
+    { id: 'settings', label: 'Settings', hint: 'Preferences' }
+  ]), [stats.completionRate, stats.total, gamification.level]);
 
   const addTimeToTask = useCallback(async (taskId, seconds) => {
     const task = tasks.find((item) => item.id === taskId);
@@ -715,39 +729,72 @@ function App() {
   }, [tasks, pomodoroTaskId, resetPomodoro]);
 
   return (
-    <div className={`app-shell density-${density}`}>
-      <Sidebar activePanel={activePanel} setActivePanel={setActivePanel} stats={stats} />
-      <main className="container main-panel">
-        <header>
-          <h1>TaskNest</h1>
-          <p className="subtitle">Plan, prioritize, and finish your work with momentum.</p>
-          <div className="pulse-strip" aria-label="Current workload highlights">
-            <span className="pulse-chip">
-              <strong>{todayTasks.length}</strong>
-              due today
-            </span>
-            <span className="pulse-chip">
-              <strong>{overdueTasks.length}</strong>
-              overdue
-            </span>
-            <span className="pulse-chip">
-              <strong>{upcomingTasks.length}</strong>
-              upcoming
-            </span>
-            <span className="pulse-chip">
-              <strong>{stats.weekDone}</strong>
-              done this week
-            </span>
+    <div className={`app-shell density-${density} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <Sidebar
+        activePanel={activePanel}
+        items={navItems}
+        collapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        onNavigate={(item) => {
+          setActivePanel(item.id);
+          if (item.id === 'calendar') {
+            setTaskViewMode('calendar');
+          }
+        }}
+      />
+      <div className="main-shell">
+        <header className="topbar" role="banner">
+          <div className="topbar-left">
+            <div>
+              <p className="eyebrow">Workspace</p>
+              <h1>TaskNest</h1>
+            </div>
+            <span className="topbar-chip">Focus mode ready</span>
           </div>
-          <div className="sync-row" role="status" aria-live="polite">
-            <p className={`sync-status ${apiError ? 'is-error' : ''}`}>
-              {apiError ? `Backend sync error: ${apiError}` : isBusy ? 'Syncing with backend...' : 'All changes synced'}
-            </p>
+          <div className="topbar-right">
+            <div className={`sync-status ${apiError ? 'is-error' : ''}`} role="status" aria-live="polite">
+              {apiError ? `Backend sync error: ${apiError}` : isBusy ? 'Syncing...' : 'All changes synced'}
+            </div>
             <button className="btn" type="button" onClick={loadTasks} disabled={isBusy}>
-              Refresh data
+              Refresh
             </button>
           </div>
         </header>
+        <main className="container main-panel">
+          <header className="page-header">
+            <div>
+              <h2>{activePanel === 'tasks' ? 'Tasks' : activePanel === 'calendar' ? 'Calendar' : activePanel === 'analytics' ? 'Analytics' : activePanel === 'settings' ? 'Settings' : 'Dashboard'}</h2>
+              <p className="subtitle">
+                {activePanel === 'calendar'
+                  ? 'Plan the week with a clear schedule.'
+                  : activePanel === 'analytics'
+                    ? 'Track momentum, streaks, and performance.'
+                    : activePanel === 'tasks'
+                      ? 'Capture, prioritize, and move work forward.'
+                      : activePanel === 'settings'
+                        ? 'Personalize your workspace.'
+                        : 'Plan, prioritize, and finish your work with momentum.'}
+              </p>
+            </div>
+            <div className="pulse-strip" aria-label="Current workload highlights">
+              <span className="pulse-chip">
+                <strong>{todayTasks.length}</strong>
+                due today
+              </span>
+              <span className="pulse-chip">
+                <strong>{overdueTasks.length}</strong>
+                overdue
+              </span>
+              <span className="pulse-chip">
+                <strong>{upcomingTasks.length}</strong>
+                upcoming
+              </span>
+              <span className="pulse-chip">
+                <strong>{stats.weekDone}</strong>
+                done this week
+              </span>
+            </div>
+          </header>
 
         {isEditing && (
           <EditForm
@@ -758,7 +805,7 @@ function App() {
         )}
 
         {activePanel === 'overview' && (
-          <section id="panel-overview" aria-label="Overview">
+          <section id="panel-overview" className="page-section panel-stack" aria-label="Overview">
             <section className="stats-grid" aria-label="Task statistics">
               <StatCard value={stats.total} label="Total" />
               <StatCard value={stats.active} label="Active" />
@@ -774,6 +821,14 @@ function App() {
               <AnalyticsDashboard tasks={tasks} />
             </PanelCard>
             <section className="panel-grid">
+              <PanelCard title="Active tasks">
+                <ul className="compact-list">
+                  {activeTasks.map((task) => (
+                    <li key={task.id}>{task.name} <small>{task.dueDate ? new Date(`${task.dueDate}T00:00:00`).toLocaleDateString() : 'No due date'}</small></li>
+                  ))}
+                  {!activeTasks.length && <li>{isLoading ? 'Loading active tasks...' : 'No active tasks yet.'}</li>}
+                </ul>
+              </PanelCard>
               <PanelCard title="Upcoming">
                 <ul className="compact-list">
                   {upcomingTasks.map((task) => (
@@ -794,9 +849,54 @@ function App() {
           </section>
         )}
 
+        {activePanel === 'analytics' && (
+          <section id="panel-analytics" className="page-section panel-stack" aria-label="Analytics">
+            <PanelCard title="Gamification">
+              <GamificationPanel stats={gamification} tasks={tasks} />
+            </PanelCard>
+            <PanelCard title="Productivity analytics">
+              <AnalyticsDashboard tasks={tasks} />
+            </PanelCard>
+          </section>
+        )}
+
+        {activePanel === 'calendar' && (
+          <section id="panel-calendar" className="page-section panel-stack" aria-label="Calendar">
+            <CalendarView
+              tasks={filteredTasks}
+              viewMode={calendarViewMode}
+              onViewModeChange={setCalendarViewMode}
+              cursorDate={calendarCursor}
+              onNavigate={setCalendarCursor}
+              selectedDate={selectedDate}
+              onSelectDate={(dateKey) => {
+                setSelectedDate(dateKey);
+                const [year, month, day] = dateKey.split('-').map(Number);
+                setCalendarCursor(new Date(year, month - 1, day));
+              }}
+              onMoveTask={moveTaskToDate}
+              isBusy={isBusy}
+            />
+            <PanelCard title={`Tasks on ${new Date(`${selectedDate}T00:00:00`).toLocaleDateString()}`}>
+              <TaskList
+                tasks={selectedDayTasks}
+                deleteTask={deleteTask}
+                toggleTask={toggleTask}
+                enterEditMode={enterEditMode}
+                addSubtask={addSubtask}
+                toggleSubtask={toggleSubtask}
+                deleteSubtask={deleteSubtask}
+                emptyMessage={isLoading ? 'Loading...' : 'No tasks scheduled for this day.'}
+              />
+            </PanelCard>
+          </section>
+        )}
+
         {activePanel === 'tasks' && (
-          <section id="panel-tasks" aria-label="Tasks">
-            <CustomForm ref={taskInputRef} addTask={addTask} addTaskFromQuickInput={addTaskFromQuickInput} />
+          <section id="panel-tasks" className="page-section panel-stack" aria-label="Tasks">
+            <PanelCard title="Create task">
+              <CustomForm ref={taskInputRef} addTask={addTask} addTaskFromQuickInput={addTaskFromQuickInput} />
+            </PanelCard>
             <section className="controls" aria-label="Task controls">
               <div className="view-tabs" role="tablist" aria-label="Task views">
                 {VIEWS.map((item, index) => (
@@ -932,7 +1032,7 @@ function App() {
         )}
 
         {activePanel === 'focus' && (
-          <section id="panel-focus" className="panel-grid" aria-label="Focus">
+          <section id="panel-focus" className="page-section panel-grid" aria-label="Focus">
             <PanelCard title="Pomodoro focus">
               <PomodoroTimer
                 tasks={tasks.filter((task) => !task.checked)}
@@ -984,7 +1084,7 @@ function App() {
         )}
 
         {activePanel === 'settings' && (
-          <section id="panel-settings">
+          <section id="panel-settings" className="page-section">
             <SettingsPanel
               density={density}
               setDensity={setDensity}
@@ -994,7 +1094,8 @@ function App() {
             />
           </section>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
