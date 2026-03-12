@@ -1,0 +1,144 @@
+.board {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  margin-top: 0.5rem;
+  animation: fade-up 420ms ease-out both;
+}
+
+.column {
+  border: 1px solid hsl(var(--edge) / 0.6);
+  border-radius: calc(var(--_radius) * 0.95);
+  background: linear-gradient(150deg, hsl(var(--surface) / 0.75), hsl(var(--muted) / 0.74));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 0.8em 1.4em hsl(var(--txt) / 0.07),
+    inset 0 0 0 1px hsl(var(--bg) / 0.3);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 20rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.column.over {
+  border-color: hsl(var(--accent) / 0.7);
+  box-shadow:
+    0 1rem 1.6rem hsl(var(--accent) / 0.18),
+    inset 0 0 0 1px hsl(var(--bg) / 0.3);
+  transform: translateY(-2px);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0.9rem 0.6rem;
+  border-bottom: 1px solid hsl(var(--edge) / 0.6);
+}
+
+.columnHeader h3 {
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.count {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--edge));
+  background: hsl(var(--bg) / 0.7);
+}
+
+.columnBody {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.85rem 0.9rem 1rem;
+}
+
+.card {
+  border-radius: calc(var(--_radius) * 0.85);
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--edge) / 0.7);
+  background: linear-gradient(145deg, hsl(var(--surface) / 0.78), hsl(var(--muted) / 0.7));
+  box-shadow:
+    0 0.6em 1.2em hsl(var(--txt) / 0.08),
+    inset 0 0 0 1px hsl(var(--bg) / 0.3);
+  display: grid;
+  gap: 0.55rem;
+  cursor: grab;
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.cardHeader h4 {
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--edge));
+}
+
+.priority-high {
+  border-color: hsl(var(--accent1) / 0.58);
+  background-color: hsl(var(--accent1) / 0.15);
+}
+
+.priority-medium {
+  border-color: hsl(var(--accent) / 0.54);
+  background-color: hsl(var(--accent) / 0.12);
+}
+
+.priority-low {
+  border-color: hsl(var(--edge));
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.actions .btn {
+  font-size: 0.75rem;
+  padding: 0.45em 0.7em;
+}
+
+.dragging {
+  opacity: 0.55;
+  transform: scale(0.98);
+  box-shadow:
+    0 0.3em 0.8em hsl(var(--txt) / 0.08),
+    inset 0 0 0 1px hsl(var(--bg) / 0.2);
+}
+
+.empty {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}

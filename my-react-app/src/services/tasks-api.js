@@ -2,7 +2,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 const buildUrl = (path) => `${API_BASE_URL}${path}`;
 
-const request = async (path, options = {}) => {
+export const request = async (path, options = {}) => {
   const response = await fetch(buildUrl(path), {
     headers: {
       'Content-Type': 'application/json',

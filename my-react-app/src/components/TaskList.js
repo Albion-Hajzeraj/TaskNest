@@ -4,7 +4,16 @@ import TaskItem from './TaskItem';
 // styles
 import styles from './TaskList.module.css';
 
-const TaskList = ({ tasks, deleteTask, toggleTask, enterEditMode, emptyMessage = 'No tasks yet.' }) => {
+const TaskList = ({
+  tasks,
+  deleteTask,
+  toggleTask,
+  enterEditMode,
+  addSubtask,
+  toggleSubtask,
+  deleteSubtask,
+  emptyMessage = 'No tasks yet.'
+}) => {
   if (!tasks.length) {
     return <p className={styles.empty} role="status" aria-live="polite">{emptyMessage}</p>;
   }
@@ -18,6 +27,9 @@ const TaskList = ({ tasks, deleteTask, toggleTask, enterEditMode, emptyMessage =
           deleteTask={deleteTask}
           toggleTask={toggleTask}
           enterEditMode={enterEditMode}
+          addSubtask={addSubtask}
+          toggleSubtask={toggleSubtask}
+          deleteSubtask={deleteSubtask}
         />
       ))
       }

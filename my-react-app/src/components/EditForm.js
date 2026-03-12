@@ -3,14 +3,18 @@ import { useState, useEffect } from 'react';
 // library imports
 import { CheckIcon } from '@heroicons/react/24/solid'
 import { CATEGORY_SUGGESTIONS, PRIORITY_OPTIONS, REPEAT_OPTIONS } from '../features/tasks/constants';
+import { getAutoPriority } from '../features/tasks/priority';
 
 const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
   const [updatedTaskName, setUpdatedTaskName] = useState(editedTask.name);
   const [priority, setPriority] = useState(editedTask.priority ?? 'medium');
+  const [priorityMode, setPriorityMode] = useState(editedTask.priorityMode ?? 'auto');
   const [dueDate, setDueDate] = useState(editedTask.dueDate ?? '');
   const [category, setCategory] = useState(editedTask.category ?? 'General');
   const [repeat, setRepeat] = useState(editedTask.repeat ?? 'none');
   const [notes, setNotes] = useState(editedTask.notes ?? '');
+
+  const autoPriority = getAutoPriority(dueDate);
 
   useEffect(()=> {
     const closeModalIfEscaped = (e) => {
@@ -30,6 +34,7 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
       ...editedTask,
       name: updatedTaskName.trim(),
       priority,
+      priorityMode,
       dueDate,
       category: category.trim() || 'General',
       repeat,
@@ -65,16 +70,36 @@ const EditForm = ({ editedTask, updateTask, closeEditMode }) => {
           >Update Task</label>
         </div>
         <div className="advanced-grid">
-          <label>
-            Priority
-            <select className="input" value={priority} onChange={(e) => setPriority(e.target.value)}>
-              {PRIORITY_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option[0].toUpperCase() + option.slice(1)}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="field">
+            <span>Priority</span>
+            <div className="stack-inline">
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={priorityMode !== 'manual'}
+                  onChange={(e) => setPriorityMode(e.target.checked ? 'auto' : 'manual')}
+                />
+                <span>Auto</span>
+              </label>
+              <select
+                className="input"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                disabled={priorityMode !== 'manual'}
+                aria-disabled={priorityMode !== 'manual'}
+                aria-label="Manual priority"
+              >
+                {PRIORITY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option[0].toUpperCase() + option.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {priorityMode !== 'manual' && (
+              <small className="hint">Auto priority: {autoPriority[0].toUpperCase() + autoPriority.slice(1)}</small>
+            )}
+          </div>
           <label>
             Due date
             <input className="input" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />

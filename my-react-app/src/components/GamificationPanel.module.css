@@ -1,0 +1,96 @@
+.panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.levelRow {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.level {
+  font-size: 1.4rem;
+  margin-top: 0.2rem;
+}
+
+.subLabel {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.streakCard {
+  border: 1px solid hsl(var(--edge) / 0.6);
+  border-radius: calc(var(--_radius) * 0.8);
+  padding: 0.6rem 0.8rem;
+  background: hsl(var(--surface) / 0.8);
+  display: grid;
+  gap: 0.2rem;
+  min-width: 140px;
+}
+
+.progressWrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+
+.progressBar {
+  height: 0.7rem;
+  background: hsl(var(--bg) / 0.65);
+  border-radius: 999px;
+  border: 1px solid hsl(var(--edge) / 0.6);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(160deg, hsl(var(--accent)), hsl(var(--glow)));
+  transition: width var(--_tspeed_slow) var(--_ttype_squish);
+}
+
+.progressNote {
+  font-size: 0.76rem;
+  opacity: 0.7;
+}
+
+.badges {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.badgeGrid {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  border-radius: 999px;
+  border: 1px dashed hsl(var(--edge));
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  opacity: 0.6;
+}
+
+.badgeActive {
+  opacity: 1;
+  border-style: solid;
+  border-color: hsl(var(--accent) / 0.6);
+  background: hsl(var(--accent) / 0.12);
+}

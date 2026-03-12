@@ -1,0 +1,178 @@
+.dashboard {
+  display: grid;
+  gap: 1rem;
+}
+
+.metrics {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.metricCard {
+  border: 1px solid hsl(var(--edge) / 0.6);
+  border-radius: calc(var(--_radius) * 0.9);
+  padding: 0.9rem;
+  background: linear-gradient(150deg, hsl(var(--surface) / 0.76), hsl(var(--muted) / 0.74));
+  box-shadow: inset 0 0 0 1px hsl(var(--bg) / 0.25);
+  display: grid;
+  gap: 0.25rem;
+}
+
+.metricLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.metricValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.charts {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.chartCard {
+  border: 1px solid hsl(var(--edge) / 0.6);
+  border-radius: calc(var(--_radius) * 0.95);
+  padding: 0.9rem;
+  background: linear-gradient(150deg, hsl(var(--surface) / 0.78), hsl(var(--muted) / 0.74));
+  box-shadow: inset 0 0 0 1px hsl(var(--bg) / 0.25);
+  display: grid;
+  gap: 0.7rem;
+}
+
+.chartCard h3,
+.overdueList h3 {
+  font-size: 0.98rem;
+}
+
+.barChart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+  align-items: end;
+  min-height: 10rem;
+}
+
+.barItem {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+}
+
+.barTrack {
+  width: 100%;
+  height: 7rem;
+  border-radius: 0.6rem;
+  background: hsl(var(--bg) / 0.6);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.2rem;
+  border: 1px solid hsl(var(--edge) / 0.55);
+}
+
+.barFill {
+  width: 100%;
+  border-radius: 0.5rem;
+  background: linear-gradient(160deg, hsl(var(--accent)), hsl(var(--glow)));
+  box-shadow: 0 0.6rem 1.2rem hsl(var(--accent) / 0.25);
+  transition: height var(--_tspeed_slow) var(--_ttype_squish);
+}
+
+.barValue {
+  font-size: 0.7rem;
+  opacity: 0.78;
+}
+
+.barLabel {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+.donutWrap {
+  display: grid;
+  place-items: center;
+  gap: 0.6rem;
+}
+
+.donut {
+  width: 140px;
+  height: 140px;
+}
+
+.donutTrack {
+  fill: none;
+  stroke: hsl(var(--edge) / 0.6);
+  stroke-width: 12;
+}
+
+.donutProgress {
+  fill: none;
+  stroke: hsl(var(--accent));
+  stroke-width: 12;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+  transition: stroke-dashoffset var(--_tspeed_slow) var(--_ttype_squish);
+}
+
+.donutLabel {
+  display: grid;
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.donutLabel strong {
+  font-size: 1.4rem;
+}
+
+.donutLabel span {
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.overdueList {
+  border: 1px solid hsl(var(--edge) / 0.6);
+  border-radius: calc(var(--_radius) * 0.95);
+  padding: 0.9rem;
+  background: linear-gradient(150deg, hsl(var(--surface) / 0.78), hsl(var(--muted) / 0.72));
+  box-shadow: inset 0 0 0 1px hsl(var(--bg) / 0.25);
+  display: grid;
+  gap: 0.55rem;
+}
+
+.overdueList ul {
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.overdueList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  border-bottom: 1px dashed hsl(var(--edge) / 0.7);
+  padding-bottom: 0.35rem;
+}
+
+.overdueList small {
+  opacity: 0.75;
+}
+
+.empty {
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+@media (max-width: 760px) {
+  .barChart {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

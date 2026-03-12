@@ -1,6 +1,8 @@
 const express = require('express');
 
 const taskRoutes = require('./modules/tasks/task.routes');
+const statsRoutes = require('./modules/stats/stats.routes');
+const aiRoutes = require('./modules/ai/ai.routes');
 
 const app = express();
 
@@ -11,6 +13,8 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/tasks', taskRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });

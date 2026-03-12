@@ -291,6 +291,33 @@ h1 {
   flex-wrap: wrap;
 }
 
+.stack-inline {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--txt) / 0.8);
+  border: 1px solid hsl(var(--edge) / 0.7);
+  padding: 0.35rem 0.5rem;
+  border-radius: 999px;
+  background: hsl(var(--surface) / 0.8);
+}
+
+.toggle input {
+  accent-color: hsl(var(--accent));
+  width: 1rem;
+  height: 1rem;
+}
+
 .wrapper {
   flex: 1 1 100%;
   position: relative;
@@ -382,10 +409,49 @@ textarea.input {
   text-align: left;
 }
 
-.advanced-grid label {
+.advanced-grid label,
+.advanced-grid .field {
   font-size: 0.82rem;
   display: grid;
   gap: 0.34rem;
+}
+
+.subtask-builder {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.subtask-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.subtask-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.subtask-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.subtask-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ai-suggestions {
+  border: 1px dashed hsl(var(--edge) / 0.7);
+  border-radius: calc(var(--_radius) * 0.8);
+  padding: 0.8rem;
+  background: hsl(var(--bg) / 0.65);
 }
 
 .full-width {

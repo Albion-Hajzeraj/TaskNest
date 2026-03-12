@@ -27,6 +27,13 @@
   flex: 1;
 }
 
+.content {
+  min-width: 0;
+  display: grid;
+  gap: 0.4rem;
+  flex: 1;
+}
+
 .actions {
   display: flex;
   gap: 0.4rem;
@@ -148,6 +155,17 @@
   line-height: 1.45;
 }
 
+.repeatPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.repeatIcon {
+  width: 0.95em;
+  height: 0.95em;
+}
+
 .priority-high {
   border-color: hsl(var(--accent1) / 0.58);
   background-color: hsl(var(--accent1) / 0.15);
@@ -181,6 +199,72 @@
   border-left: 2px solid hsl(var(--edge) / 0.9);
   padding-left: 0.5rem;
   margin-top: 0.1rem;
+}
+
+.subtasksBlock {
+  margin-top: 0.35rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.subtasks {
+  list-style: none;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.subtask {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  font-size: 0.85em;
+}
+
+.subtaskLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.subtaskLabel input {
+  accent-color: hsl(var(--accent));
+}
+
+.subtaskDone {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.subtaskRemove {
+  border: 1px solid hsl(var(--edge) / 0.7);
+  background: hsl(var(--bg) / 0.75);
+  color: hsl(var(--txt));
+  font-size: 0.7rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.subtaskForm {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.subtaskInput {
+  border: 1px solid hsl(var(--edge) / 0.7);
+  border-radius: calc(var(--_radius) * 0.6);
+  padding: 0.45em 0.6em;
+  background-color: hsl(var(--surface) / 0.65);
+  font-size: 0.82em;
+}
+
+.subtaskAdd {
+  padding: 0.45em 0.8em;
+  font-size: 0.75em;
 }
 
 .completed {

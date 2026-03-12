@@ -20,8 +20,10 @@ export const CATEGORY_SUGGESTIONS = [
 
 export const INITIAL_ADVANCED_TASK_FIELDS = {
   priority: 'medium',
+  priorityMode: 'auto',
   dueDate: '',
   category: '',
   notes: '',
-  repeat: 'none'
+  repeat: 'none',
+  subtasks: []
 };
